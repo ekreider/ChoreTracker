@@ -1,0 +1,33 @@
+{
+  "version": "3.0",
+  "defaultProvider": "cdnjs",
+  "libraries": [
+    {
+      "library": "bootstrap@5.3.3",
+      "destination": "wwwroot/lib/bootstrap/",
+      "files": [
+        "js/bootstrap.min.js",
+        "css/bootstrap.min.css"
+      ]
+    },
+    {
+      "library": "axios@1.7.8",
+      "destination": "wwwroot/lib/axios/",
+      "files": [
+        "axios.min.js"
+      ]
+    },
+    {
+      "library": "sweetalert2@11.15.10",
+      "destination": "wwwroot/lib/sweetalert2/",
+      "files": [
+        "sweetalert2.min.js",
+        "sweetalert2.min.css"
+      ]
+    },
+    {
+      "library": "htmx@2.0.4",
+      "destination": "wwwroot/lib/htmx/"
+    }
+  ]
+}
