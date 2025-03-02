@@ -27,6 +27,9 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+//set dapper settings
+Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true;
+
 var lifetime = app.Services.GetRequiredService<IHostApplicationLifetime>();
 lifetime.ApplicationStarted.Register(() =>
 {

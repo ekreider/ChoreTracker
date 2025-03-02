@@ -1,11 +1,13 @@
 ﻿using Microsoft.Data.Sqlite;
 using Dapper;
+using System.Security.Cryptography;
 
 namespace ChoreTracker.Models
 {
     public static class DataAccess
     {
         public static readonly string FilePath = Path.Combine(Directory.GetCurrentDirectory(), "App_Data/ChoreTracker.db");
+
 
         public static void InitDB()
         {
@@ -127,8 +129,155 @@ namespace ChoreTracker.Models
 
         #region category
 
+        public static List<Category> GetCategories()
+        {
+            try
+            {
+                using (var connection = new SqliteConnection($"Data Source={FilePath}"))
+                {
+                    connection.Open();
+                    var query = @"SELECT c.*, i.* 
+                            FROM Category c
+                            LEFT JOIN Icon i ON c.ICON_ID = i.ID";
 
+                    var categories = connection.Query<Category, Icon, Category>(
+                        query,
+                        (category, icon) =>
+                        {
+                            category.Icon = icon;
+                            return category;
+                        },splitOn: "ID").ToList();
 
+                    return categories;
+                }
+            }
+            catch (Exception ex)
+            {
+
+                Console.WriteLine(ex.Message.ToString());
+                return null;
+            }
+        }
+        #endregion
+
+        #region frequencytype
+        public static List<FrequencyType> GetFrequencyTypes()
+        {
+            try
+            {
+                using (var connection = new SqliteConnection($"Data Source={FilePath}"))
+                {
+                    connection.Open();
+
+                    return connection.Query<FrequencyType>("SELECT * from FREQUENCY_TYPE").ToList();
+                }
+            }
+            catch (Exception ex)
+            {
+
+                Console.WriteLine(ex.Message.ToString());
+                return null;
+            }
+        }
+
+        public static FrequencyType GetFrequencyType(int _ID)
+        {
+            try
+            {
+                using (var connection = new SqliteConnection($"Data Source={FilePath}"))
+                {
+                    connection.Open();
+
+                    var i = connection.Query<FrequencyType>("SELECT * FROM FREQUENCY_TYPE WHERE ID = @ID", new { ID = _ID }).FirstOrDefault();
+                    return i;
+                }
+            }
+            catch (Exception ex)
+            {
+
+                Console.WriteLine(ex.Message.ToString());
+                return null;
+            }
+        }
+        #endregion
+
+        #region frequency
+        public static List<Frequency> GetFrequencies()
+        {
+            try
+            {
+                using (var connection = new SqliteConnection($"Data Source={FilePath}"))
+                {
+                    connection.Open();
+                    var query = @"select f.*, ft.*
+                                    from FREQUENCY f
+                                    inner join FREQUENCY_TYPE ft
+                                    on f.FREQUENCY_TYPE_ID = ft.id";
+
+                    var frequencies = connection.Query<Frequency, FrequencyType, Frequency>(
+                        query,
+                        (frequency, frequencytype) =>
+                        {
+                            frequency.FrequencyType = frequencytype;
+                            return frequency;
+                        }, splitOn: "ID").ToList();
+
+                    return frequencies;
+                }
+            }
+            catch (Exception ex)
+            {
+
+                Console.WriteLine(ex.Message.ToString());
+                return null;
+            }
+        }
+        #endregion
+
+        #region chore
+        public static List<Chore> GetChores()
+        {
+            try
+            {
+                using (var connection = new SqliteConnection($"Data Source={FilePath}"))
+                {
+                    connection.Open();
+                    var query = @"select *
+                                    from CHORE c
+                                    inner JOIN
+                                    FREQUENCY F
+                                    on c.Frequency_id = f.id
+                                    inner join FREQUENCY_TYPE ft
+                                    on f.frequency_type_id = ft.id
+                                    inner join CATEGORY cat
+                                    on c.category_id = cat.id
+                                    inner join icon i
+                                    on cat.icon_id = i.id";
+
+                    var chores = connection.Query<Chore, Frequency, FrequencyType, Category, Icon, Chore>(
+                        query,
+                        (chore, frequency, frequencyType, category, icon) =>
+                        {
+                            category.Icon = icon;
+                            frequency.FrequencyType = frequencyType;
+                            chore.Frequency = frequency;
+                            chore.Category = category;
+
+                            chore.SetComputedProperties();
+
+                            return chore;
+                        }, splitOn: "ID").ToList();
+
+                    return chores;
+                }
+            }
+            catch (Exception ex)
+            {
+
+                Console.WriteLine(ex.Message.ToString());
+                return null;
+            }
+        }
         #endregion
     }
 }
