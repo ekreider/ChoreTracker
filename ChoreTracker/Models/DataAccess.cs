@@ -1,14 +1,14 @@
 ﻿using Microsoft.Data.Sqlite;
+using Dapper;
 
 namespace ChoreTracker.Models
 {
     public static class DataAccess
     {
+        public static readonly string FilePath = Path.Combine(Directory.GetCurrentDirectory(), "App_Data/ChoreTracker.db");
 
         public static void InitDB()
         {
-            string FilePath = Path.Combine(Directory.GetCurrentDirectory(), "App_Data/ChoreTracker.db");
-
             using (var connection = new SqliteConnection($"Data Source={FilePath}"))
             {
                 connection.Open();
@@ -84,5 +84,51 @@ namespace ChoreTracker.Models
 
 			
         }
+
+		#region icon
+		public static List<Icon> GetIcons()
+		{
+			try
+			{
+                using (var connection = new SqliteConnection($"Data Source={FilePath}"))
+                {
+                    connection.Open();
+                    return connection.Query<Icon>("SELECT * FROM ICON").ToList();
+                }
+            }
+			catch (Exception ex)
+			{
+				
+				Console.WriteLine(ex.Message.ToString());
+				return null;
+			}
+        }
+
+        public static Icon GetIcon(int _ID)
+        {
+            try
+            {
+                using (var connection = new SqliteConnection($"Data Source={FilePath}"))
+                {
+                    connection.Open();
+                    var i = connection.Query<Icon>("SELECT * FROM ICON WHERE ID = @ID", new { ID = _ID }).FirstOrDefault();
+                    return i;
+                }
+            }
+            catch (Exception ex)
+            {
+
+                Console.WriteLine(ex.Message.ToString());
+                return null;
+            }
+        }
+
+        #endregion
+
+        #region category
+
+
+
+        #endregion
     }
 }
